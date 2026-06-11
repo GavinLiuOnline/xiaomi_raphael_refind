@@ -188,21 +188,21 @@ make lib gnuefi ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-
 
 ### 发布 Release
 
-推送以 `v` 开头的 tag 时，会自动创建 GitHub Release 并上传 `.efi` 文件：
+推送任意 tag 时，会自动创建 GitHub Release 并上传 zip 包：
 
 ```bash
 git tag v0.14.2
 git push origin v0.14.2
 ```
 
-Release 附件包含：
+Release 附件为 **`xiaomi_raphael_refind_efi.zip`**，内含：
 
 | 文件 | 架构 |
 |------|------|
 | `refind_aa64.efi` | ARM64 |
 | `gptsync_aa64.efi` | ARM64 |
 
-也可在 GitHub Actions 页面手动触发 **workflow_dispatch** 进行构建（不创建 Release，除非同时推送 tag）。
+也可在 GitHub Actions 页面手动触发 **workflow_dispatch**，勾选 **Create GitHub Release** 发布（tag 为 `manual-<run号>`）。
 
 ## 7. 目录说明
 
