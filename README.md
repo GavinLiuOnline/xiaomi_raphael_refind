@@ -205,7 +205,7 @@ Release 附件为 **`xiaomi_raphael_refind_efi.zip`**，内含：
 
 `scripts/build-aa64.sh` 会同时编译 refind 与 `drivers_aa64/`。
 
-推送 **master** 或手动 **Run workflow** 都会自动创建 Release（tag 为 `build-<run号>`）；推送 git tag 则使用该 tag 名。
+推送 **master** / **main** 或手动 **Run workflow** 都会自动创建 Release（tag 为分支名，如 `master`）；推送 git tag 则使用该 tag 名。
 
 ## 7. 目录说明
 
