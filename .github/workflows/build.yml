@@ -1,0 +1,68 @@
+name: Build
+
+on:
+  push:
+    branches: [master, main]
+    tags: ["v*"]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-aa64:
+    name: aa64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git \
+            gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+      - name: Prepare GNU-EFI for aarch64
+        run: ./scripts/prepare-gnuefi-aa64.sh
+
+      - name: Build aa64
+        run: ./scripts/build-aa64.sh
+
+      - name: Upload aa64 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: refind-aa64
+          path: |
+            refind/refind_aa64.efi
+            gptsync/gptsync_aa64.efi
+
+  release:
+    name: Release
+    needs: build-aa64
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download aa64 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: refind-aa64
+          path: dist
+
+      - name: List release files
+        run: |
+          ls -lh dist/refind/ dist/gptsync/
+          file dist/refind/refind_aa64.efi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: rEFInd ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/refind/refind_aa64.efi
+            dist/gptsync/gptsync_aa64.efi

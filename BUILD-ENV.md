@@ -171,11 +171,36 @@ make ARCH=aarch64 CC=aarch64-linux-gnu-gcc
 
 重新运行 `./scripts/prepare-gnuefi-aa64.sh`。
 
-## 6. 目录说明
+## 6. GitHub Actions
+
+推送或 PR 到 `master` / `main` 分支时，`.github/workflows/build.yml` 会自动运行 **build-aa64**（`prepare-gnuefi-aa64.sh` + `build-aa64.sh`）。
+
+构建产物可在 Actions 页面的 **Artifacts** 中下载（`refind-aa64`）。
+
+### 发布 Release
+
+推送以 `v` 开头的 tag 时，会自动创建 GitHub Release 并上传 `.efi` 文件：
+
+```bash
+git tag v0.14.2
+git push origin v0.14.2
+```
+
+Release 附件包含：
+
+| 文件 | 架构 |
+|------|------|
+| `refind_aa64.efi` | ARM64 |
+| `gptsync_aa64.efi` | ARM64 |
+
+也可在 GitHub Actions 页面手动触发 **workflow_dispatch** 进行构建（不创建 Release，除非同时推送 tag）。
+
+## 7. 目录说明
 
 | 路径 | 说明 |
 |------|------|
 | `.gnuefi-aa64/` | 本地 GNU-EFI（含 aarch64 头文件/库），由准备脚本生成，已加入 `.gitignore` |
+| `.github/workflows/build.yml` | CI 自动编译工作流 |
 | `scripts/prepare-gnuefi-aa64.sh` | 准备交叉编译用 GNU-EFI |
 | `scripts/build-aa64.sh` | 编译 `refind_aa64.efi` |
 | `BUILDING.txt` | 官方完整编译文档（英文） |
