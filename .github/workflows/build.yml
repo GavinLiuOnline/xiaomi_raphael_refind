@@ -7,11 +7,6 @@ on:
   pull_request:
     branches: [master, main]
   workflow_dispatch:
-    inputs:
-      release:
-        description: Create GitHub Release
-        type: boolean
-        default: true
 
 permissions:
   contents: read
@@ -37,12 +32,21 @@ jobs:
       - name: Build aa64 (refind + drivers)
         run: ./scripts/build-aa64.sh
 
+      - name: Verify build outputs
+        run: |
+          test -f refind/refind_aa64.efi
+          test -f gptsync/gptsync_aa64.efi
+          driver_count="$(find drivers_aa64 -maxdepth 1 -name '*_aa64.efi' | wc -l)"
+          echo "drivers_aa64 count: ${driver_count}"
+          ls -lh drivers_aa64/
+          test "${driver_count}" -ge 6
+
       - name: Package release zip
         run: |
-          zip -r xiaomi_raphael_refind_efi.zip \
+          zip -j xiaomi_raphael_refind_efi.zip \
             refind/refind_aa64.efi \
-            gptsync/gptsync_aa64.efi \
-            drivers_aa64/
+            gptsync/gptsync_aa64.efi
+          zip -r xiaomi_raphael_refind_efi.zip drivers_aa64/
           ls -lh xiaomi_raphael_refind_efi.zip
           unzip -l xiaomi_raphael_refind_efi.zip
 
@@ -57,21 +61,18 @@ jobs:
             xiaomi_raphael_refind_efi.zip
 
       - name: Resolve release tag
-        if: >
-          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
-          (github.event_name == 'workflow_dispatch' && inputs.release == true)
+        if: github.event_name != 'pull_request'
         id: meta
         run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
           else
-            echo "tag=manual-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "tag=build-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
           fi
+          echo "release tag: $(cat "$GITHUB_OUTPUT" | grep '^tag=')"
 
       - name: Create GitHub Release
-        if: >
-          (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
-          (github.event_name == 'workflow_dispatch' && inputs.release == true)
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
@@ -79,5 +80,3 @@ jobs:
           name: xiaomi_raphael_refind ${{ steps.meta.outputs.tag }}
           generate_release_notes: true
           files: xiaomi_raphael_refind_efi.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

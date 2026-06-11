@@ -23,6 +23,12 @@ cd "$ROOT"
 make gnuefi "${MAKE_ARGS[@]}"
 make fs_gnuefi "${MAKE_ARGS[@]}"
 
+driver_count="$(find "$ROOT/drivers_aa64" -maxdepth 1 -name '*_aa64.efi' 2>/dev/null | wc -l)"
+if [[ "$driver_count" -lt 6 ]]; then
+    echo "error: expected at least 6 drivers in drivers_aa64/, found ${driver_count}" >&2
+    exit 1
+fi
+
 echo "==> built:"
 ls -lh "$ROOT/refind/refind_aa64.efi" "$ROOT/gptsync/gptsync_aa64.efi"
 ls -lh "$ROOT/drivers_aa64/"

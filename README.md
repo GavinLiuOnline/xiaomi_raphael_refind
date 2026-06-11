@@ -199,13 +199,13 @@ Release 附件为 **`xiaomi_raphael_refind_efi.zip`**，内含：
 
 | 路径 | 说明 |
 |------|------|
-| `refind/refind_aa64.efi` | rEFInd 主程序 |
-| `gptsync/gptsync_aa64.efi` | GPT 同步工具 |
+| `refind_aa64.efi` | rEFInd 主程序（zip 根目录） |
+| `gptsync_aa64.efi` | GPT 同步工具（zip 根目录） |
 | `drivers_aa64/*.efi` | 文件系统驱动（ext2、ext4、btrfs、hfs、iso9660、reiserfs） |
 
 `scripts/build-aa64.sh` 会同时编译 refind 与 `drivers_aa64/`。
 
-在 GitHub Actions 页面手动触发 **workflow_dispatch** 即可发布（默认创建 Release，tag 为 `manual-<run号>`）。推送 tag 也会自动发布。
+推送 **master** 或手动 **Run workflow** 都会自动创建 Release（tag 为 `build-<run号>`）；推送 git tag 则使用该 tag 名。
 
 ## 7. 目录说明
 
