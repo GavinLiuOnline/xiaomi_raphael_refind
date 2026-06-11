@@ -197,12 +197,15 @@ git push origin v0.14.2
 
 Release 附件为 **`xiaomi_raphael_refind_efi.zip`**，内含：
 
-| 文件 | 架构 |
+| 路径 | 说明 |
 |------|------|
-| `refind_aa64.efi` | ARM64 |
-| `gptsync_aa64.efi` | ARM64 |
+| `refind/refind_aa64.efi` | rEFInd 主程序 |
+| `gptsync/gptsync_aa64.efi` | GPT 同步工具 |
+| `drivers_aa64/*.efi` | 文件系统驱动（ext2、ext4、btrfs、hfs、iso9660、reiserfs） |
 
-也可在 GitHub Actions 页面手动触发 **workflow_dispatch**，勾选 **Create GitHub Release** 发布（tag 为 `manual-<run号>`）。
+`scripts/build-aa64.sh` 会同时编译 refind 与 `drivers_aa64/`。
+
+在 GitHub Actions 页面手动触发 **workflow_dispatch** 即可发布（默认创建 Release，tag 为 `manual-<run号>`）。推送 tag 也会自动发布。
 
 ## 7. 目录说明
 
@@ -211,5 +214,5 @@ Release 附件为 **`xiaomi_raphael_refind_efi.zip`**，内含：
 | `.gnuefi-aa64/` | 本地 GNU-EFI（含 aarch64 头文件/库），由准备脚本生成，已加入 `.gitignore` |
 | `.github/workflows/build.yml` | CI 自动编译工作流 |
 | `scripts/prepare-gnuefi-aa64.sh` | 准备交叉编译用 GNU-EFI |
-| `scripts/build-aa64.sh` | 编译 `refind_aa64.efi` |
+| `scripts/build-aa64.sh` | 编译 `refind_aa64.efi` 与 `drivers_aa64/` |
 | `BUILDING.txt` | 官方完整编译文档（英文） |

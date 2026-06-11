@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build refind_aa64.efi using the local .gnuefi-aa64 toolchain.
+# Build refind_aa64.efi and drivers_aa64/ using the local .gnuefi-aa64 toolchain.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -10,13 +10,20 @@ if [[ ! -f "$GNUEFI/include/efi/aarch64/efibind.h" ]]; then
     exit 1
 fi
 
-cd "$ROOT"
-make gnuefi ARCH=aarch64 GNUEFI_ARM64_TARGET_SUPPORT=y \
-    EFIINC="$GNUEFI/include/efi" \
-    GNUEFILIB="$GNUEFI/lib" \
-    EFILIB="$GNUEFI/lib" \
+MAKE_ARGS=(
+    ARCH=aarch64
+    GNUEFI_ARM64_TARGET_SUPPORT=y
+    EFIINC="$GNUEFI/include/efi"
+    GNUEFILIB="$GNUEFI/lib"
+    EFILIB="$GNUEFI/lib"
     EFICRT0="$GNUEFI/lib"
+)
+
+cd "$ROOT"
+make gnuefi "${MAKE_ARGS[@]}"
+make fs_gnuefi "${MAKE_ARGS[@]}"
 
 echo "==> built:"
 ls -lh "$ROOT/refind/refind_aa64.efi" "$ROOT/gptsync/gptsync_aa64.efi"
+ls -lh "$ROOT/drivers_aa64/"
 file "$ROOT/refind/refind_aa64.efi"
