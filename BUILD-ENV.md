@@ -72,18 +72,17 @@ cd /path/to/refind-0.14.2
 # 安装交叉工具链
 sudo apt-get install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 
-# 克隆并编译 GNU-EFI
+# 克隆并编译 GNU-EFI（只编译 lib + gnuefi，不要 make all，apps 会在 CI 上失败）
 git clone --depth 1 https://github.com/vathpela/gnu-efi.git /tmp/gnu-efi
 cd /tmp/gnu-efi
 make clean
-make ARCH=aarch64 CC=aarch64-linux-gnu-gcc
-make -C gnuefi ARCH=aarch64 CC=aarch64-linux-gnu-gcc
+make lib gnuefi ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-
 
 # 安装到项目目录
 GNUEFI_DIR=/path/to/refind-0.14.2/.gnuefi-aa64
 mkdir -p "$GNUEFI_DIR/include" "$GNUEFI_DIR/lib"
 cp -r inc "$GNUEFI_DIR/include/efi"
-cp gnuefi/crt0-efi-aarch64.o gnuefi/libgnuefi.a gnuefi/elf_aarch64_efi.lds "$GNUEFI_DIR/lib/"
+cp aarch64/gnuefi/crt0-efi-aarch64.o aarch64/gnuefi/libgnuefi.a gnuefi/elf_aarch64_efi.lds "$GNUEFI_DIR/lib/"
 cp aarch64/lib/libefi.a "$GNUEFI_DIR/lib/"
 ```
 
@@ -164,8 +163,18 @@ sudo apt-get install gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 编译 GNU-EFI 时未使用交叉编译器。确保：
 
 ```bash
-make ARCH=aarch64 CC=aarch64-linux-gnu-gcc
+make lib gnuefi ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-
 ```
+
+### `ld: cannot represent machine aarch64`（CI 常见）
+
+GNU-EFI 顶层 `make all` 会编译 `apps` 示例，在 x86 主机上用宿主机 `ld` 链接 aarch64 会失败。只编译 rEFInd 需要的部分：
+
+```bash
+make lib gnuefi ARCH=aarch64 CROSS_COMPILE=aarch64-linux-gnu-
+```
+
+`scripts/prepare-gnuefi-aa64.sh` 已按此方式处理。
 
 ### `.gnuefi-aa64/` 被删除
 
