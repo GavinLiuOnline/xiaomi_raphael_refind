@@ -108,6 +108,12 @@ REFIT_CONFIG GlobalConfig = { /* TextOnly = */ FALSE,
 #else
                               /* GzippedLoaders = */ FALSE,
 #endif
+                              /* PauseSm8150MdpScanout = */ FALSE,
+#ifdef EFIAARCH64
+                              /* PreserveSm8150Splash = */ TRUE,
+#else
+                              /* PreserveSm8150Splash = */ FALSE,
+#endif
                               /* RequestedScreenWidth = */ 0,
                               /* RequestedScreenHeight = */ 0,
                               /* BannerBottomEdge = */ 0,
@@ -528,7 +534,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     // SetupScreen() clears the screen; but ScanForBootloaders() may display a
     // message that must be deleted, so do so
-    BltClearScreen(TRUE);
+    if (!GlobalConfig.PreserveSm8150Splash)
+        BltClearScreen(TRUE);
     pdInitialize();
 
     if (GlobalConfig.ScanDelay > 0) {
@@ -539,7 +546,8 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
        for (i = 0; i < GlobalConfig.ScanDelay; i++)
           refit_call1_wrapper(BS->Stall, 1000000);
        RescanAll(GlobalConfig.ScanDelay > 1, TRUE);
-       BltClearScreen(TRUE);
+       if (!GlobalConfig.PreserveSm8150Splash)
+           BltClearScreen(TRUE);
     } // if
 
     if (GlobalConfig.DefaultSelection)

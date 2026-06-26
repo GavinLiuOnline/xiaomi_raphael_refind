@@ -351,6 +351,8 @@ typedef struct {
    BOOLEAN          WriteSystemdVars;
    BOOLEAN          FollowSymlinks;
    BOOLEAN          GzippedLoaders;
+   BOOLEAN          PauseSm8150MdpScanout;
+   BOOLEAN          PreserveSm8150Splash;
    UINTN            RequestedScreenWidth;
    UINTN            RequestedScreenHeight;
    UINTN            BannerBottomEdge;

@@ -65,6 +65,7 @@
 #include "launch_efi.h"
 #include "log.h"
 #include "scan.h"
+#include "sm8150_mdp_stop.h"
 
 //
 // constants
@@ -318,6 +319,10 @@ EFI_STATUS StartEFIImage(IN REFIT_VOLUME *Volume,
 
     // close open file handles
     LOG(1, LOG_LINE_NORMAL, L"Launching '%s'", ImageTitle);
+
+    if (((OSType == 'L') || (OSType == 'E')) && GlobalConfig.PauseSm8150MdpScanout)
+        sm8150_mdp_stop_scanout();
+
     UninitRefitLib();
 
     // Actually launch the program....

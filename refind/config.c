@@ -830,6 +830,12 @@ VOID ReadConfig(CHAR16 *FileName)
         } else if (MyStriCmp(TokenList[0], L"write_systemd_vars")) {
             GlobalConfig.WriteSystemdVars = HandleBoolean(TokenList, TokenCount);
 
+        } else if (MyStriCmp(TokenList[0], L"pause_sm8150_mdp_scanout")) {
+            GlobalConfig.PauseSm8150MdpScanout = HandleBoolean(TokenList, TokenCount);
+
+        } else if (MyStriCmp(TokenList[0], L"preserve_sm8150_splash")) {
+            GlobalConfig.PreserveSm8150Splash = HandleBoolean(TokenList, TokenCount);
+
         } else if (MyStriCmp(TokenList[0], L"include") && (TokenCount == 2) &&
                    MyStriCmp(FileName, GlobalConfig.ConfigFilename)) {
             if (!MyStriCmp(TokenList[1], FileName)) {
@@ -866,9 +872,14 @@ VOID ReadConfig(CHAR16 *FileName)
     SetLinuxMatchPatterns(GlobalConfig.LinuxPrefixes);
 
     if (!FileExists(SelfDir, L"icons") && !FileExists(SelfDir, GlobalConfig.IconsDir)) {
-        Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
-        GlobalConfig.TextOnly = TRUE;
+        if (!GlobalConfig.PreserveSm8150Splash) {
+            Print(L"Icons directory doesn't exist; setting textonly = TRUE!\n");
+            GlobalConfig.TextOnly = TRUE;
+        }
     }
+
+    if (GlobalConfig.PreserveSm8150Splash)
+        GlobalConfig.PauseSm8150MdpScanout = FALSE;
 } /* VOID ReadConfig() */
 
 static VOID AddSubmenu(LOADER_ENTRY *Entry, REFIT_FILE *File, REFIT_VOLUME *Volume, CHAR16 *Title) {

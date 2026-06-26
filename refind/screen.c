@@ -136,7 +136,8 @@ VOID InitScreen(VOID)
     PrepareBlankLine();
 
     // show the banner if in text mode
-    if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1))
+    if (GlobalConfig.TextOnly && (GlobalConfig.ScreensaverTime != -1) &&
+        !GlobalConfig.PreserveSm8150Splash)
        DrawScreenHeader(L"Initializing...");
 }
 
@@ -146,6 +147,11 @@ VOID SetupScreen(VOID)
     UINTN NewWidth, NewHeight;
 
     LOG(1, LOG_LINE_NORMAL, L"Setting screen resolution and mode");
+    if (GlobalConfig.PreserveSm8150Splash) {
+        LOG(2, LOG_LINE_NORMAL, L"Preserving SM8150 bootloader splash; skipping UI mode setup");
+        return;
+    }
+
     // Convert mode number to horizontal & vertical resolution values
     if ((GlobalConfig.RequestedScreenWidth > 0) && (GlobalConfig.RequestedScreenHeight == 0))
        egGetResFromMode(&(GlobalConfig.RequestedScreenWidth), &(GlobalConfig.RequestedScreenHeight));
@@ -242,6 +248,11 @@ VOID BeginTextScreen(IN CHAR16 *Title)
 
 VOID BeginExternalScreen(IN BOOLEAN UseGraphicsMode, IN CHAR16 *Title)
 {
+    if (GlobalConfig.PreserveSm8150Splash) {
+        LOG(2, LOG_LINE_NORMAL, L"Preserving SM8150 splash before OS handoff");
+        return;
+    }
+
     if (!AllowGraphicsMode)
         UseGraphicsMode = FALSE;
 
@@ -438,6 +449,9 @@ VOID BltClearScreen(BOOLEAN ShowBanner)
     EG_IMAGE *NewBanner = NULL;
     INTN BannerPosX, BannerPosY;
     EG_PIXEL Black = { 0x0, 0x0, 0x0, 0 };
+
+    if (GlobalConfig.PreserveSm8150Splash)
+        return;
 
     if (ShowBanner && !(GlobalConfig.HideUIFlags & HIDEUI_FLAG_BANNER)) {
         // load banner on first call
