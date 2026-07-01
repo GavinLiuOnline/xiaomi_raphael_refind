@@ -96,7 +96,7 @@ BOOLEAN line_edit(CHAR16 *line_in, CHAR16 **line_out, UINTN x_max) {
         refit_call3_wrapper(ST->ConOut->SetCursorPosition, ST->ConOut, cursor, y_pos);
 
         refit_call3_wrapper(BS->WaitForEvent, 1, &ST->ConIn->WaitForKey, &index);
-        err = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        err = ReadKeyStrokeEx(&key);
         if (EFI_ERROR(err))
             continue;
 

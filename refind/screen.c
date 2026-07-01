@@ -63,6 +63,7 @@
 #include "menu.h"
 #include "mystrings.h"
 #include "log.h"
+#include "sm8150_keys.h"
 #include "../include/refit_call_wrapper.h"
 
 #include "../include/egemb_refind_banner.h"
@@ -314,6 +315,19 @@ VOID DrawScreenHeader(IN CHAR16 *Title)
 // Keyboard input
 //
 
+EFI_STATUS ReadKeyStrokeEx(OUT EFI_INPUT_KEY *Key)
+{
+    if (Key == NULL)
+        return EFI_INVALID_PARAMETER;
+
+#if defined(EFIAARCH64)
+    if (sm8150_try_read_key(Key))
+        return EFI_SUCCESS;
+#endif
+
+    return refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, Key);
+}
+
 BOOLEAN ReadAllKeyStrokes(VOID)
 {
     BOOLEAN       GotKeyStrokes;
@@ -322,7 +336,7 @@ BOOLEAN ReadAllKeyStrokes(VOID)
 
     GotKeyStrokes = FALSE;
     for (;;) {
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        Status = ReadKeyStrokeEx(&key);
         if (Status == EFI_SUCCESS) {
             GotKeyStrokes = TRUE;
             continue;

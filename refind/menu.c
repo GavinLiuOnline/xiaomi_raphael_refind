@@ -296,6 +296,22 @@ static VOID UpdateScroll(IN OUT SCROLL_STATE *State, IN UINTN Movement)
     State->LastVisible = State->FirstVisible + State->MaxVisible - 1;
 } // static VOID UpdateScroll()
 
+#if defined(EFIAARCH64)
+/* Phone volume keys send up/down, but the icon main menu uses those to jump
+ * between rows (OS loaders vs tools).  Walk every entry in order instead. */
+static VOID PhoneLinearScroll(IN OUT SCROLL_STATE *State, IN INTN Delta)
+{
+    INTN NewSel = State->CurrentSelection + Delta;
+
+    if (NewSel < 0 || NewSel > State->MaxIndex)
+        return;
+    State->PreviousSelection = State->CurrentSelection;
+    State->CurrentSelection = NewSel;
+    if (!State->PaintAll)
+        State->PaintSelection = TRUE;
+}
+#endif
+
 //
 // menu helper functions
 //
@@ -418,7 +434,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
     }
 
     if (Screen->TimeoutSeconds == -1) {
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        Status = ReadKeyStrokeEx(&key);
         if (Status == EFI_SUCCESS) {
             KeyAsString[0] = key.UnicodeChar;
             KeyAsString[1] = 0;
@@ -452,7 +468,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         pdDraw();
 
         if (WaitForRelease) {
-            Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+            Status = ReadKeyStrokeEx(&key);
             if (Status == EFI_SUCCESS) {
                 // reset, because otherwise the buffer gets queued with keystrokes
                 refit_call2_wrapper(ST->ConIn->Reset, ST->ConIn, FALSE);
@@ -478,7 +494,7 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
         if (PointerEnabled) {
             PointerStatus = pdUpdateState();
         }
-        Status = refit_call2_wrapper(ST->ConIn->ReadKeyStroke, ST->ConIn, &key);
+        Status = ReadKeyStrokeEx(&key);
 
         if (Status == EFI_SUCCESS) {
             PointerActive = FALSE;
@@ -542,12 +558,24 @@ UINTN RunGenericMenu(IN REFIT_MENU_SCREEN *Screen,
             LOG(3, LOG_LINE_NORMAL, L"Processing keystroke (ScanCode = %d)....", key.ScanCode);
             switch (key.ScanCode) {
                 case SCAN_UP:
+#if defined(EFIAARCH64)
+                    if (StyleFunc == MainMenuStyle && State.ScrollMode == SCROLL_MODE_ICONS) {
+                        PhoneLinearScroll(&State, -1);
+                        break;
+                    }
+#endif
                     UpdateScroll(&State, SCROLL_LINE_UP);
                     break;
                 case SCAN_LEFT:
                     UpdateScroll(&State, SCROLL_LINE_LEFT);
                     break;
                 case SCAN_DOWN:
+#if defined(EFIAARCH64)
+                    if (StyleFunc == MainMenuStyle && State.ScrollMode == SCROLL_MODE_ICONS) {
+                        PhoneLinearScroll(&State, 1);
+                        break;
+                    }
+#endif
                     UpdateScroll(&State, SCROLL_LINE_DOWN);
                     break;
                 case SCAN_RIGHT:

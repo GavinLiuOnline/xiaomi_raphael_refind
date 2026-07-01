@@ -71,6 +71,7 @@
 #include "launch_efi.h"
 #include "scan.h"
 #include "log.h"
+#include "sm8150_keys.h"
 #include "../include/refit_call_wrapper.h"
 #include "../include/version.h"
 #include "../libeg/efiConsoleControl.h"
@@ -86,7 +87,11 @@
 REFIT_MENU_ENTRY MenuEntryReturn   = { L"Return to Main Menu", TAG_RETURN, 1, 0, 0, NULL, NULL, NULL };
 
 REFIT_MENU_SCREEN MainMenu       = { L"Main Menu", NULL, 0, NULL, 0, NULL, 0, L"Automatic boot",
+#if defined(EFIAARCH64)
+                                     L"Volume keys cycle all items; Power key to boot;",
+#else
                                      L"Use arrow keys to move cursor; Enter to boot;",
+#endif
                                      L"Insert, Tab, or F2 for more options; Esc or Backspace to refresh" };
 static REFIT_MENU_SCREEN AboutMenu      = { L"About", NULL, 0, NULL, 0, NULL, 0, NULL, L"Press Enter to return to main menu", L"" };
 
@@ -519,6 +524,9 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
         SetAppleOSInfo();
 
     InitScreen();
+#if defined(EFIAARCH64)
+    sm8150_keys_init();
+#endif
     WarnIfLegacyProblems();
     MainMenu.TimeoutSeconds = GlobalConfig.Timeout;
 

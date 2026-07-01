@@ -93,6 +93,7 @@ VOID DrawScreenHeader(IN CHAR16 *Title);
 
 VOID EndlessIdleLoop(VOID);
 BOOLEAN ReadAllKeyStrokes(VOID);
+EFI_STATUS ReadKeyStrokeEx(OUT EFI_INPUT_KEY *Key);
 VOID PrintUglyText(IN CHAR16 *Text, UINTN PositionCode);
 VOID PauseForKey(VOID);
 VOID PauseSeconds(UINTN Seconds);

@@ -223,7 +223,11 @@
 #define HIDEUI_FLAG_ALL       ((0xffff))
 
 // Default hint text for program-launch submenus
+#if defined(EFIAARCH64)
+#define SUBSCREEN_HINT1            L"Volume keys cycle all items; Power key to boot;"
+#else
 #define SUBSCREEN_HINT1            L"Use arrow keys to move cursor; Enter to boot;"
+#endif
 #define SUBSCREEN_HINT2            L"Insert or F2 to edit options; Esc to return to main menu"
 #define SUBSCREEN_HINT2_NO_EDITOR  L"Esc to return to main menu"
 
