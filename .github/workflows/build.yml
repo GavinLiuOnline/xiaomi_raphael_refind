@@ -75,7 +75,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.meta.outputs.tag }}
+          tag_name: ${{ steps.meta.outputs.tag }}-Release
           target_commitish: ${{ github.sha }}
           name: xiaomi_raphael_refind ${{ steps.meta.outputs.tag }}
           generate_release_notes: true
